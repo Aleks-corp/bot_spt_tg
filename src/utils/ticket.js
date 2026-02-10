@@ -23,12 +23,9 @@ export async function sendTicketAndNotify(ctx, state) {
       `Логін: ${state.data.mailInfo || "не вказано"}\n` +
       "Домен: @oano.ukr.education";
   } else {
-    // спільний блок для всіх, крім скидання паролю
     detailsText =
       `Тип: ${typeLabel}\n` +
-      // підтип тільки якщо є (для поломок)
       (state.data.subtype ? `Підтип: ${state.data.subtype}\n` : "") +
-      // місце тільки якщо є (поломки мають, "інше питання" — ні)
       (state.data.location ? `Місце: ${state.data.location}\n` : "") +
       `Деталі: ${state.data.problemDetails || "не вказано"}`;
   }
@@ -39,7 +36,7 @@ export async function sendTicketAndNotify(ctx, state) {
     `🆔 Telegram ID: ${user.id}\n` +
     `💬 З чату: ${chatTitle}\n` +
     `🕒 Час: ${new Date().toLocaleString("uk-UA")}\n\n` +
-    `${detailsText}`;
+    detailsText;
 
   await ctx.reply("Дякуємо! Заявка відправлена до техпідтримки. 👍");
 

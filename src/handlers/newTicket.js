@@ -81,7 +81,7 @@ const handleTicketDialog = async (ctx) => {
       userState.set(ctx.from.id, state);
 
       return ctx.reply(
-        "Введіть, будь ласка, логін пошти — те, що до @oano.ukr.education.",
+        "Введіть, будь ласка, логін пошти — без @oano.ukr.education.",
         Markup.removeKeyboard(),
       );
     }
@@ -120,7 +120,7 @@ const handleTicketDialog = async (ctx) => {
         "З якою програмою проблема?",
         Markup.keyboard([
           ["📞 Zoom", "📄 Office"],
-          ["🌐 Браузер (Chrome / Edge)"],
+          ["🌐 Браузер (Chrome / Opera)"],
           ["📘 Електронний журнал / сайт"],
           ["📌 Інша програма"],
         ])
@@ -185,18 +185,34 @@ const handleTicketDialog = async (ctx) => {
   // 2) ПІДТИП ДЛЯ ПОЛОМОК
   //
   if (state.step === "WAIT_SUBTYPE") {
-    // На цьому етапі просто зберігаємо текст кнопки як підтип
     state.data.subtype = text;
-    return askPlace(ctx, state); // тут же приберемо клаву всередині askPlace
+
+    // якщо обрали один із "інших" підтипів — просимо опис
+    const isOtherSubtype =
+      text === "📎 Інше з комп’ютером" ||
+      text === "📌 Інша програма" ||
+      text === "📌 Інше з принтером" ||
+      text === "📌 Інше з інтернетом";
+
+    if (isOtherSubtype) {
+      state.step = "WAIT_PROBLEM_DETAILS_AFTER_SUBTYPE";
+      userState.set(ctx.from.id, state);
+
+      return ctx.reply(
+        "Опишіть, будь ласка, проблему детальніше.",
+        Markup.removeKeyboard(),
+      );
+    }
+
+    // для всіх інших підтипів одразу питаємо місце
+    return askPlace(ctx, state);
   }
 
-  //
-  // 2а) ОПИС ДЛЯ "ІНШЕ ПИТАННЯ"
-  //
-  if (state.step === "WAIT_PROBLEM_DETAILS_OTHER") {
+  // 2б) ОПИС ДЛЯ "ІНШИХ" ПІДТИПІВ (ПК/програми/принтер/інтернет)
+  if (state.step === "WAIT_PROBLEM_DETAILS_AFTER_SUBTYPE") {
     state.data.problemDetails = text;
-    // після опису — тільки ПІБ, без місця
-    return askName(ctx, state);
+    // далі як для звичайних поломок: місце → ПІБ
+    return askPlace(ctx, state);
   }
 
   //
