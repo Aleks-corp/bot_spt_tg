@@ -13,16 +13,14 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 
 // Команди
 bot.start(startBot);
-bot.hears("📝 Нова заявка", handleNewTicket);
+bot.hears("📝 Нове звернення", handleNewTicket);
 bot.command("reply", handleReplyCommand);
 
 // Текстові повідомлення
 bot.on(message("text"), async (ctx) => {
-  // Спочатку перевіряємо reply в групі
   const handledByReply = await handleReplyToMessage(ctx);
-  if (handledByReply) return; // ⭐ Якщо оброблено — зупиняємось
+  if (handledByReply) return;
 
-  // Потім діалог створення заявки
   await handleTicketDialog(ctx);
 });
 

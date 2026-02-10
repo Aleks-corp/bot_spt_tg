@@ -8,7 +8,10 @@ export async function sendTicketAndNotify(ctx, state) {
     {
       reset_mail_password: "Скидання паролю пошти",
       pc_issue: "Проблеми з ПК",
+      prog_issue: "Проблеми з програмами (MS Office тощо)",
       printer_issue: "Проблеми з принтером",
+      internet_issue: "Проблеми з інтернетом",
+      projector_issue: "Проблеми з проектором",
       other_issue: "Інша проблема",
     }[state.data.type] || "Невідомий тип";
 
@@ -17,16 +20,22 @@ export async function sendTicketAndNotify(ctx, state) {
   if (state.data.type === "reset_mail_password") {
     detailsText =
       "Тип: Скидання паролю пошти\n" +
-      `Пошта: ${state.data.mailInfo || "не вказано"}`;
+      `Логін: ${state.data.mailInfo || "не вказано"}\n` +
+      "Домен: @oano.ukr.education";
   } else {
+    // спільний блок для всіх, крім скидання паролю
     detailsText =
       `Тип: ${typeLabel}\n` +
+      // підтип тільки якщо є (для поломок)
+      (state.data.subtype ? `Підтип: ${state.data.subtype}\n` : "") +
+      // місце тільки якщо є (поломки мають, "інше питання" — ні)
+      (state.data.location ? `Місце: ${state.data.location}\n` : "") +
       `Деталі: ${state.data.problemDetails || "не вказано"}`;
   }
 
   const text =
     "Нова заявка:\n" +
-    `👤 Від: ${state.data.fullName} (@${user.username || "no_username"})\n` +
+    `👤 Від: ${state.data.fullName || "не вказано"} (@${user.username || "no_username"})\n` +
     `🆔 Telegram ID: ${user.id}\n` +
     `💬 З чату: ${chatTitle}\n` +
     `🕒 Час: ${new Date().toLocaleString("uk-UA")}\n\n` +
