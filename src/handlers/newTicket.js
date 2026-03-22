@@ -131,17 +131,33 @@ const handleTicketDialog = async (ctx) => {
       );
     }
 
+    // Принтер — одразу вибір моделі принтера (без підтипів)
     if (type === "printer_issue") {
+      state.step = "WAIT_PRINTER_MODEL";
+      userState.set(ctx.from.id, state);
+
+      await ctx.replyWithMediaGroup([
+        {
+          type: "photo",
+          media: "https://example.com/hp-laserjet-m130a.jpg",
+        },
+        {
+          type: "photo",
+          media: "https://example.com/brother-dcp-l2540dnr.jpg",
+        },
+        {
+          type: "photo",
+          media: "https://example.com/kyocera-ecosys-p2040dn.jpg",
+        },
+      ]);
+
       return ctx.reply(
-        "Що саме з принтером?",
+        "Оберіть, будь ласка, ваш принтер:",
         Markup.keyboard([
-          ["⛔ Не друкує", "🧃 Закінчився тонер / фарба"],
-          ["📄 Застрягає папір", "🖼️ Погана якість друку"],
-          ["📌 Інше з принтером"],
+          ["🖨️ HP LaserJet", "🖨️ Brother"],
+          ["🖨️ Kyocera", "📌 Інший принтер"],
           ["⬅️ Назад"],
-        ])
-          .resize()
-          .oneTime(),
+        ]).resize(),
       );
     }
 
@@ -187,11 +203,48 @@ const handleTicketDialog = async (ctx) => {
   }
 
   //
-  // 2) ПІДТИП ДЛЯ ПОЛОМОК
+  // 2) ВИБІР МОДЕЛІ ПРИНТЕРА
+  //
+  if (state.step === "WAIT_PRINTER_MODEL") {
+    if (text === "⬅️ Назад") {
+      state.step = "WAIT_MAIN_TYPE";
+      state.data.type = null;
+      state.data.printer = null;
+      userState.set(ctx.from.id, state);
+
+      return ctx.reply(
+        "Оберіть, будь ласка, що у вас сталося:",
+        Markup.keyboard([
+          ["🔑 Скинути пароль пошти"],
+          ["💻 Комп’ютер", "📦 Програми"],
+          ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
+          ["🎥 Проектор / телевізор"],
+          ["❓ Інше питання"],
+        ])
+          .resize()
+          .oneTime(),
+      );
+    }
+
+    if (text === "🖨️ HP LaserJet") {
+      state.data.printer = "HP LaserJet MFP M130a";
+    } else if (text === "🖨️ Brother") {
+      state.data.printer = "Brother DCP-L2540DNR";
+    } else if (text === "🖨️ Kyocera") {
+      state.data.printer = "Kyocera ECOSYS P2040dn";
+    } else if (text === "📌 Інший принтер") {
+      state.data.printer = "Інший принтер";
+    } else {
+      return ctx.reply("Будь ласка, оберіть один із варіантів на клавіатурі.");
+    }
+
+    return askPlace(ctx, state);
+  }
+
+  //
+  // 2) ПІДТИП ДЛЯ ПОЛОМОК (ПК/програми/інтернет/проектор)
   //
   if (state.step === "WAIT_SUBTYPE") {
-    state.data.subtype = text;
-
     if (text === "⬅️ Назад") {
       // повертаємось до вибору основного типу
       state.step = "WAIT_MAIN_TYPE";
@@ -213,6 +266,7 @@ const handleTicketDialog = async (ctx) => {
       );
     }
 
+    state.data.subtype = text;
     // якщо обрали один із "інших" підтипів — просимо опис
     const isOtherSubtype =
       text === "📎 Інше з комп’ютером" ||

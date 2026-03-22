@@ -26,6 +26,9 @@ export async function sendTicketAndNotify(ctx, state) {
     detailsText =
       `Тип: ${typeLabel}\n` +
       (state.data.subtype ? `Підтип: ${state.data.subtype}\n` : "") +
+      (state.data.type === "printer_issue" && state.data.printer
+        ? `Принтер: ${state.data.printer}\n`
+        : "") +
       (state.data.location ? `Місце: ${state.data.location}\n` : "") +
       `Деталі: ${state.data.problemDetails || "не вказано"}`;
   }
