@@ -16,10 +16,6 @@ bot.start(startBot);
 bot.hears("📝 Нове звернення", handleNewTicket);
 bot.command("reply", handleReplyCommand);
 
-bot.on("message", (ctx) => {
-  console.log("CHAT:", ctx.chat);
-});
-
 // Текстові повідомлення
 bot.on(message("text"), async (ctx) => {
   const handledByReply = await handleReplyToMessage(ctx);
