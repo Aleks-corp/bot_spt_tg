@@ -140,17 +140,17 @@ const handleTicketDialog = async (ctx) => {
         {
           type: "photo",
           media:
-            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774215806/bot/HP_llrwzx.webp",
+            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774222718/bot/KYOCERA_qrrjkn.png",
         },
         {
           type: "photo",
           media:
-            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774215806/bot/brother_xxsyyw.jpg",
+            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774222718/bot/BROTHER_pusebc.png",
         },
         {
           type: "photo",
           media:
-            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774215806/bot/kyocera_q2buz0.webp",
+            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774222718/bot/HP_Laserjet_zp7s01.png",
         },
       ]);
 
