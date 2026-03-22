@@ -139,15 +139,18 @@ const handleTicketDialog = async (ctx) => {
       await ctx.replyWithMediaGroup([
         {
           type: "photo",
-          media: "https://example.com/hp-laserjet-m130a.jpg",
+          media:
+            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774215806/bot/HP_llrwzx.webp",
         },
         {
           type: "photo",
-          media: "https://example.com/brother-dcp-l2540dnr.jpg",
+          media:
+            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774215806/bot/brother_xxsyyw.jpg",
         },
         {
           type: "photo",
-          media: "https://example.com/kyocera-ecosys-p2040dn.jpg",
+          media:
+            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774215806/bot/kyocera_q2buz0.webp",
         },
       ]);
 
