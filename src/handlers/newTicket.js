@@ -109,6 +109,7 @@ const handleTicketDialog = async (ctx) => {
           ["🧊 Зависає / синій екран"],
           ["⌨️ Миша / клавіатура / інше обладнання"],
           ["📎 Інше з комп’ютером"],
+          ["⬅️ Назад"],
         ])
           .resize()
           .oneTime(),
@@ -123,6 +124,7 @@ const handleTicketDialog = async (ctx) => {
           ["🌐 Браузер (Chrome / Opera)"],
           ["📘 Електронний журнал / сайт"],
           ["📌 Інша програма"],
+          ["⬅️ Назад"],
         ])
           .resize()
           .oneTime(),
@@ -136,6 +138,7 @@ const handleTicketDialog = async (ctx) => {
           ["⛔ Не друкує", "🧃 Закінчився тонер / фарба"],
           ["📄 Застрягає папір", "🖼️ Погана якість друку"],
           ["📌 Інше з принтером"],
+          ["⬅️ Назад"],
         ])
           .resize()
           .oneTime(),
@@ -151,6 +154,7 @@ const handleTicketDialog = async (ctx) => {
           ["🐌 Дуже повільний інтернет"],
           ["🌍 Не відкриває сайти / сервіси"],
           ["📌 Інше з інтернетом"],
+          ["⬅️ Назад"],
         ])
           .resize()
           .oneTime(),
@@ -165,6 +169,7 @@ const handleTicketDialog = async (ctx) => {
           ["🔌 Немає сигналу з комп’ютера"],
           ["🎚️ Дуже темне / нечітке зображення"],
           ["📌 Інша проблема"],
+          ["⬅️ Назад"],
         ])
           .resize()
           .oneTime(),
@@ -186,6 +191,27 @@ const handleTicketDialog = async (ctx) => {
   //
   if (state.step === "WAIT_SUBTYPE") {
     state.data.subtype = text;
+
+    if (text === "⬅️ Назад") {
+      // повертаємось до вибору основного типу
+      state.step = "WAIT_MAIN_TYPE";
+      state.data.type = null;
+      state.data.subtype = null;
+      userState.set(ctx.from.id, state);
+
+      return ctx.reply(
+        "Оберіть, будь ласка, що у вас сталося:",
+        Markup.keyboard([
+          ["🔑 Скинути пароль пошти"],
+          ["💻 Комп’ютер", "📦 Програми"],
+          ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
+          ["🎥 Проектор / телевізор"],
+          ["❓ Інше питання"],
+        ])
+          .resize()
+          .oneTime(),
+      );
+    }
 
     // якщо обрали один із "інших" підтипів — просимо опис
     const isOtherSubtype =
