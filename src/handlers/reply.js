@@ -96,7 +96,7 @@ const handleReplyToMessage = async (ctx) => {
     await ctx.telegram.sendMessage(
       userId,
       "Якщо у вас є ще питання, можете залишити нову заявку:",
-      Markup.keyboard([["📝 Нова заявка"]]).resize(),
+      Markup.keyboard([["📝 Нове звернення"]]).resize(),
     );
 
     await ctx.reply("✅ Відповідь користувачу відправлена.");
