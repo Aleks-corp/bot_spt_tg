@@ -241,6 +241,69 @@ const handleTicketDialog = async (ctx) => {
       return ctx.reply("Будь ласка, оберіть один із варіантів на клавіатурі.");
     }
 
+    state.step = "WAIT_PRINTER_ISSUE";
+    userState.set(ctx.from.id, state);
+    return ctx.reply(
+      "Що саме з цим принтером?",
+      Markup.keyboard([
+        ["⛔ Не друкує", "🧃 Закінчився тонер / фарба"],
+        ["📄 Застрягає папір", "🖼️ Погана якість друку"],
+        ["📌 Немає підключення"],
+        ["📌 Інше з принтером"],
+        ["⬅️ Назад"],
+      ])
+        .resize()
+        .oneTime(),
+    );
+  }
+
+  if (state.step === "WAIT_PRINTER_ISSUE") {
+    if (text === "⬅️ Назад") {
+      // назад до вибору моделі принтера
+      state.step = "WAIT_PRINTER_MODEL";
+      userState.set(ctx.from.id, state);
+
+      await ctx.replyWithMediaGroup([
+        {
+          type: "photo",
+          media:
+            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774223999/bot/KYOCERA_matkif.jpg",
+        },
+        {
+          type: "photo",
+          media:
+            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774223998/bot/brother_ncod2f.jpg",
+        },
+        {
+          type: "photo",
+          media:
+            "https://res.cloudinary.com/deeooeyeg/image/upload/v1774223999/bot/HP_Laserjet_cpspgr.jpg",
+        },
+      ]);
+
+      return ctx.reply(
+        "Оберіть, будь ласка, ваш принтер:",
+        Markup.keyboard([
+          ["🖨️ HP LaserJet", "🖨️ Brother"],
+          ["🖨️ Kyocera", "📌 Інший принтер"],
+          ["⬅️ Назад"],
+        ]).resize(),
+      );
+    }
+
+    state.data.subtype = text;
+
+    if (text === "📌 Інше з принтером") {
+      state.step = "WAIT_PROBLEM_DETAILS_AFTER_SUBTYPE";
+      userState.set(ctx.from.id, state);
+
+      return ctx.reply(
+        "Опишіть, будь ласка, проблему детальніше.",
+        Markup.removeKeyboard(),
+      );
+    }
+
+    // для конкретних проблем принтера одразу місце
     return askPlace(ctx, state);
   }
 
