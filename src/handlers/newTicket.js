@@ -1,5 +1,6 @@
 import { Markup } from "telegraf";
 import { sendTicketAndNotify } from "../utils/ticket.js";
+import { askName, askPlace } from "./askHandlers.js";
 
 // state: userId -> { step, data }
 const userState = new Map();
@@ -24,25 +25,6 @@ const handleNewTicket = (ctx) => {
   );
 };
 
-// допоміжні функції
-const askName = (ctx, state) => {
-  state.step = "WAIT_NAME";
-  userState.set(ctx.from.id, state);
-  return ctx.reply(
-    "Введіть, будь ласка, ваше прізвище та ім'я.",
-    Markup.removeKeyboard(),
-  );
-};
-
-const askPlace = (ctx, state) => {
-  state.step = "WAIT_PLACE";
-  userState.set(ctx.from.id, state);
-  return ctx.reply(
-    "Введіть, будь ласка, місце розташування (кабінет, корпус).",
-    Markup.removeKeyboard(),
-  );
-};
-
 const handleTicketDialog = async (ctx) => {
   if (ctx.chat.type !== "private") return;
 
@@ -56,9 +38,6 @@ const handleTicketDialog = async (ctx) => {
 
   const text = ctx.message.text.trim();
 
-  //
-  // 1) ВИБІР ОСНОВНОГО ТИПУ
-  //
   if (state.step === "WAIT_MAIN_TYPE") {
     let type = null;
     if (text === "🔑 Скинути пароль пошти") type = "reset_mail_password";
@@ -131,7 +110,6 @@ const handleTicketDialog = async (ctx) => {
       );
     }
 
-    // Принтер — одразу вибір моделі принтера (без підтипів)
     if (type === "printer_issue") {
       state.step = "WAIT_PRINTER_MODEL";
       userState.set(ctx.from.id, state);
@@ -157,8 +135,8 @@ const handleTicketDialog = async (ctx) => {
       return ctx.reply(
         "Оберіть, будь ласка, ваш принтер:",
         Markup.keyboard([
-          ["🖨️ HP LaserJet", "🖨️ Brother"],
-          ["🖨️ Kyocera", "📌 Інший принтер"],
+          ["🖨️ Kyocera", "🖨️ Brother"],
+          ["🖨️ HP LaserJet", "📌 Інший принтер"],
           ["⬅️ Назад"],
         ]).resize(),
       );
@@ -196,18 +174,11 @@ const handleTicketDialog = async (ctx) => {
     }
   }
 
-  //
-  // 1а) ЛОГІН ПОШТИ
-  //
   if (state.step === "WAIT_MAIL_INFO") {
     state.data.mailInfo = text;
-    // далі питаємо ПІБ
     return askName(ctx, state);
   }
 
-  //
-  // 2) ВИБІР МОДЕЛІ ПРИНТЕРА
-  //
   if (state.step === "WAIT_PRINTER_MODEL") {
     if (text === "⬅️ Назад") {
       state.step = "WAIT_MAIN_TYPE";
@@ -248,7 +219,7 @@ const handleTicketDialog = async (ctx) => {
       Markup.keyboard([
         ["⛔ Не друкує", "🧃 Закінчився тонер / фарба"],
         ["📄 Застрягає папір", "🖼️ Погана якість друку"],
-        ["📌 Немає підключення"],
+        ["🔌 Немає підключення"],
         ["📌 Інше з принтером"],
         ["⬅️ Назад"],
       ])
@@ -259,7 +230,6 @@ const handleTicketDialog = async (ctx) => {
 
   if (state.step === "WAIT_PRINTER_ISSUE") {
     if (text === "⬅️ Назад") {
-      // назад до вибору моделі принтера
       state.step = "WAIT_PRINTER_MODEL";
       userState.set(ctx.from.id, state);
 
@@ -284,8 +254,8 @@ const handleTicketDialog = async (ctx) => {
       return ctx.reply(
         "Оберіть, будь ласка, ваш принтер:",
         Markup.keyboard([
-          ["🖨️ HP LaserJet", "🖨️ Brother"],
-          ["🖨️ Kyocera", "📌 Інший принтер"],
+          ["🖨️ Kyocera", "🖨️ Brother"],
+          ["🖨️ HP LaserJet", "📌 Інший принтер"],
           ["⬅️ Назад"],
         ]).resize(),
       );
@@ -303,16 +273,11 @@ const handleTicketDialog = async (ctx) => {
       );
     }
 
-    // для конкретних проблем принтера одразу місце
     return askPlace(ctx, state);
   }
 
-  //
-  // 2) ПІДТИП ДЛЯ ПОЛОМОК (ПК/програми/інтернет/проектор)
-  //
   if (state.step === "WAIT_SUBTYPE") {
     if (text === "⬅️ Назад") {
-      // повертаємось до вибору основного типу
       state.step = "WAIT_MAIN_TYPE";
       state.data.type = null;
       state.data.subtype = null;
@@ -333,7 +298,6 @@ const handleTicketDialog = async (ctx) => {
     }
 
     state.data.subtype = text;
-    // якщо обрали один із "інших" підтипів — просимо опис
     const isOtherSubtype =
       text === "📎 Інше з комп’ютером" ||
       text === "📌 Інша програма" ||
@@ -350,28 +314,19 @@ const handleTicketDialog = async (ctx) => {
       );
     }
 
-    // для всіх інших підтипів одразу питаємо місце
     return askPlace(ctx, state);
   }
 
-  // 2б) ОПИС ДЛЯ "ІНШИХ" ПІДТИПІВ (ПК/програми/принтер/інтернет)
   if (state.step === "WAIT_PROBLEM_DETAILS_AFTER_SUBTYPE") {
     state.data.problemDetails = text;
-    // далі як для звичайних поломок: місце → ПІБ
     return askPlace(ctx, state);
   }
 
-  //
-  // 3) МІСЦЕ (КАБІНЕТ / КОРПУС)
-  //
   if (state.step === "WAIT_PLACE") {
     state.data.location = text;
     return askName(ctx, state);
   }
 
-  //
-  // 4) ПІБ
-  //
   if (state.step === "WAIT_NAME") {
     state.data.fullName = text;
 
