@@ -1,9 +1,26 @@
 import { Markup } from "telegraf";
 import { sendTicketAndNotify } from "../utils/ticket.js";
-import { askName, askPlace } from "./askHandlers.js";
 
 // state: userId -> { step, data }
 const userState = new Map();
+
+export const askName = (ctx, state) => {
+  state.step = "WAIT_NAME";
+  userState.set(ctx.from.id, state);
+  return ctx.reply(
+    "Введіть, будь ласка, ваше прізвище та ім'я.",
+    Markup.removeKeyboard(),
+  );
+};
+
+export const askPlace = (ctx, state) => {
+  state.step = "WAIT_PLACE";
+  userState.set(ctx.from.id, state);
+  return ctx.reply(
+    "Введіть, будь ласка, місце розташування (кабінет, корпус).",
+    Markup.removeKeyboard(),
+  );
+};
 
 const handleNewTicket = (ctx) => {
   userState.set(ctx.from.id, {
