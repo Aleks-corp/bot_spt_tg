@@ -40,8 +40,8 @@ function parseRange(rangeStr) {
     throw new Error("Невірні місяці або роки у параметрі range");
   }
 
-  const start = new Date(fromYear, fromMonth - 1, 1);
-  const end = new Date(toYear, toMonth, 1);
+  const start = new Date(Date.UTC(fromYear, fromMonth - 1, 1));
+  const end = new Date(Date.UTC(toYear, toMonth - 1, 1)); //← toMonth - 1
 
   return {
     start,
