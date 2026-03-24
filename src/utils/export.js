@@ -7,7 +7,8 @@ let db;
 async function getDb() {
   if (!db) {
     await client.connect();
-    db = client.db(process.env.MONGODB_DB || "oano_bot");
+    // важливо: та сама назва бази що і в Mongoose
+    db = client.db(process.env.MONGODB_DB || "tickets");
   }
   return db;
 }
@@ -40,7 +41,7 @@ function parseRange(rangeStr) {
   }
 
   const start = new Date(fromYear, fromMonth - 1, 1);
-  const end = new Date(toYear, toMonth, 1); // перший день місяця після toMonth
+  const end = new Date(toYear, toMonth, 1);
 
   return {
     start,
@@ -76,12 +77,30 @@ export async function handleExport(req, res) {
     const { start, end, label } = parseRange(rangeParam);
 
     const db = await getDb();
+
+    // виведи в лог, щоб перевірити назву колекції
+    const collections = await db.listCollections().toArray();
+    console.log(
+      "Collections in DB:",
+      collections.map((c) => c.name),
+    );
+
     const tickets = db.collection("tickets");
 
     const docs = await tickets
       .find({ createdAt: { $gte: start, $lt: end } })
       .sort({ createdAt: 1 })
       .toArray();
+
+    console.log(`Found ${docs.length} tickets from ${start} to ${end}`);
+
+    // якщо немає заявок — повертаємо 404 з повідомленням
+    if (docs.length === 0) {
+      res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" });
+      return res.end(
+        `За період ${label.replace("_to_", " — ")} заявок не знайдено.`,
+      );
+    }
 
     const lines = [headers.join(";")];
 

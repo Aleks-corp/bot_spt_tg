@@ -11,7 +11,7 @@ if (!uri) {
 
 export async function connectDB() {
   await mongoose.connect(uri, {
-    // опції за потреби
+    dbName: process.env.MONGODB_DB || "tickets",
   });
   console.log("✅ Connected to MongoDB via Mongoose");
 }
