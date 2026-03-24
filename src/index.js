@@ -2,22 +2,25 @@ import http from "http";
 import "dotenv/config";
 import axios from "axios";
 import { bot } from "./bot.js";
+import { connectDB, closeDB } from "./db.js";
+import { handleExport } from "./utils/export.js";
 
 const PORT = process.env.PORT || 3000;
 const WEBHOOK_DOMAIN = process.env.WEBHOOK_DOMAIN;
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
 
-// HTTP Server
+// HTTP Server (як було)
 const server = http.createServer(async (req, res) => {
-  // Health check
   if (req.url === "/health") {
     res.writeHead(200, { "Content-Type": "text/plain" });
     return res.end("OK");
   }
 
-  // Webhook endpoint для Telegram (тільки в production)
+  if (req.url.startsWith("/export")) {
+    return handleExport(req, res);
+  }
+
   if (IS_PRODUCTION && WEBHOOK_DOMAIN && req.url.startsWith("/telegraf/")) {
-    // Збираємо body з POST запиту
     let body = "";
     req.on("data", (chunk) => {
       body += chunk.toString();
@@ -37,7 +40,6 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Default response
   res.writeHead(200);
   res.end(`Bot is running (${IS_PRODUCTION ? "webhooks" : "polling"})`);
 });
@@ -54,34 +56,38 @@ if (!process.env.BOT_TOKEN || !process.env.SUPPORT_CHAT_ID) {
   process.exit(1);
 }
 
-// Bot launch logic
-if (IS_PRODUCTION && WEBHOOK_DOMAIN) {
-  // PRODUCTION: Webhooks
-  const webhookPath = `/telegraf/${bot.secretPathComponent()}`;
-  const webhookUrl = `${WEBHOOK_DOMAIN}${webhookPath}`;
+// Головний запуск: спочатку Mongo, потім бот
+(async () => {
+  try {
+    await connectDB();
 
-  bot.telegram
-    .setWebhook(webhookUrl)
-    .then(() => {
+    if (IS_PRODUCTION && WEBHOOK_DOMAIN) {
+      const webhookPath = `/telegraf/${bot.secretPathComponent()}`;
+      const webhookUrl = `${WEBHOOK_DOMAIN}${webhookPath}`;
+
+      await bot.telegram.setWebhook(webhookUrl);
       console.log(`✅ Webhook set to: ${webhookUrl}`);
       console.log("🤖 Bot started in PRODUCTION mode (webhooks)");
-    })
-    .catch((err) => {
-      console.error("❌ Failed to set webhook:", err);
-      process.exit(1);
-    });
-} else {
-  // DEVELOPMENT: Polling
-  bot.launch().then(() => {
-    console.log("🚀 Bot started in DEVELOPMENT mode (polling)");
-  });
+    } else {
+      await bot.launch();
+      console.log("🚀 Bot started in DEVELOPMENT mode (polling)");
 
-  // Graceful stop для polling
-  process.once("SIGINT", () => bot.stop("SIGINT"));
-  process.once("SIGTERM", () => bot.stop("SIGTERM"));
-}
+      process.once("SIGINT", async () => {
+        await closeDB();
+        bot.stop("SIGINT");
+      });
+      process.once("SIGTERM", async () => {
+        await closeDB();
+        bot.stop("SIGTERM");
+      });
+    }
+  } catch (err) {
+    console.error("❌ Failed to start app:", err);
+    process.exit(1);
+  }
+})();
 
-// Self-ping (щоб Render не засинав)
+// Self-ping
 if (WEBHOOK_DOMAIN) {
   setInterval(
     async () => {
@@ -92,7 +98,7 @@ if (WEBHOOK_DOMAIN) {
         console.error("❌ Self ping error:", err.message);
       }
     },
-    12 * 60 * 1000, // кожні 12 хвилин
+    12 * 60 * 1000,
   );
 } else {
   console.warn("⚠️ WEBHOOK_DOMAIN is not set, self ping disabled");

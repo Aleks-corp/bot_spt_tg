@@ -1,4 +1,5 @@
 const SUPPORT_CHAT_ID = Number(process.env.SUPPORT_CHAT_ID);
+import { Ticket } from "../models/ticket.model.js";
 
 export async function sendTicketAndNotify(ctx, state) {
   const user = ctx.from;
@@ -40,6 +41,20 @@ export async function sendTicketAndNotify(ctx, state) {
     `💬 З чату: ${chatTitle}\n` +
     `🕒 Час: ${new Date().toLocaleString("uk-UA")}\n\n` +
     detailsText;
+
+  await Ticket.create({
+    telegramId: user.id,
+    username: user.username || null,
+    fullName: state.data.fullName || null,
+    chatTitle,
+
+    type: state.data.type,
+    subtype: state.data.subtype || null,
+    printer: state.data.printer || null,
+    location: state.data.location || null,
+    mailLogin: state.data.mailInfo || null,
+    details: state.data.problemDetails || null,
+  });
 
   await ctx.reply("Дякуємо! Заявка відправлена до техпідтримки. 👍");
 
