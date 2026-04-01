@@ -99,7 +99,6 @@ const handleReplyToMessage = async (ctx) => {
       Markup.keyboard([["📝 Нове звернення"]]).resize(),
     );
 
-    await ctx.reply("✅ Відповідь користувачу відправлена.");
     return true;
   } catch (error) {
     console.error("Failed to send reply:", error);

@@ -1,5 +1,6 @@
-const SUPPORT_CHAT_ID = Number(process.env.SUPPORT_CHAT_ID);
 import { Ticket } from "../models/ticket.model.js";
+
+const SUPPORT_CHAT_ID = Number(process.env.SUPPORT_CHAT_ID);
 
 export async function sendTicketAndNotify(ctx, state) {
   const user = ctx.from;
@@ -18,6 +19,10 @@ export async function sendTicketAndNotify(ctx, state) {
 
   let detailsText = "";
 
+  const location = [state.data.building, state.data.room]
+    .filter(Boolean)
+    .join(", кab. ");
+
   if (state.data.type === "reset_mail_password") {
     detailsText =
       "Тип: Скидання паролю пошти\n" +
@@ -30,7 +35,7 @@ export async function sendTicketAndNotify(ctx, state) {
       (state.data.type === "printer_issue" && state.data.printer
         ? `Принтер: ${state.data.printer}\n`
         : "") +
-      (state.data.location ? `Місце: ${state.data.location}\n` : "") +
+      (location ? `Місце: ${location}\n` : "") +
       `Деталі: ${state.data.problemDetails || "не вказано"}`;
   }
 
@@ -51,7 +56,7 @@ export async function sendTicketAndNotify(ctx, state) {
     type: state.data.type,
     subtype: state.data.subtype || null,
     printer: state.data.printer || null,
-    location: state.data.location || null,
+    location: location || null,
     mailLogin: state.data.mailInfo || null,
     details: state.data.problemDetails || null,
   });

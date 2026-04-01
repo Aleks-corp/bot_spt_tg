@@ -1,6 +1,6 @@
 import { Markup } from "telegraf";
 import { sendTicketAndNotify } from "../utils/ticket.js";
-import { askName, askPlace } from "./dialogHelpers.js";
+import { askName, askRoomPlace, askBuildingPlace } from "./dialogHelpers.js";
 // state: userId -> { step, data }
 const userState = new Map();
 
@@ -272,7 +272,7 @@ const handleTicketDialog = async (ctx) => {
       );
     }
 
-    return askPlace(ctx, state);
+    return askBuildingPlace(ctx, state);
   }
 
   if (state.step === "WAIT_SUBTYPE") {
@@ -313,16 +313,27 @@ const handleTicketDialog = async (ctx) => {
       );
     }
 
-    return askPlace(ctx, state);
+    return askBuildingPlace(ctx, state);
   }
 
   if (state.step === "WAIT_PROBLEM_DETAILS_AFTER_SUBTYPE") {
     state.data.problemDetails = text;
-    return askPlace(ctx, state);
+    return askBuildingPlace(ctx, state);
   }
 
-  if (state.step === "WAIT_PLACE") {
-    state.data.location = text;
+  //
+  // КОРПУС
+  //
+  if (state.step === "WAIT_BUILDING_PLACE") {
+    state.data.building = text;
+    return askRoomPlace(ctx, state);
+  }
+
+  //
+  // КАБІНЕТ
+  //
+  if (state.step === "WAIT_ROOM_PLACE") {
+    state.data.room = text;
     return askName(ctx, state);
   }
 
