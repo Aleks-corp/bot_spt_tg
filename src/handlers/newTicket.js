@@ -17,6 +17,7 @@ const handleNewTicket = (ctx) => {
       ["💻 Комп’ютер", "📦 Програми"],
       ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
       ["🎥 Проектор / телевізор"],
+      ["📅 Захід з участю техвідділу"],
       ["❓ Інше питання"],
     ])
       .resize()
@@ -45,6 +46,7 @@ const handleTicketDialog = async (ctx) => {
     else if (text === "🖨️ Принтер") type = "printer_issue";
     else if (text === "🌐 Інтернет / Wi‑Fi") type = "internet_issue";
     else if (text === "🎥 Проектор / телевізор") type = "projector_issue";
+    else if (text === "📅 Захід з участю техвідділу") type = "event_notice";
     else if (text === "❓ Інше питання") type = "other_issue";
 
     if (!type) {
@@ -71,6 +73,17 @@ const handleTicketDialog = async (ctx) => {
 
       return ctx.reply(
         "Опишіть, будь ласка, ваше питання або проблему.",
+        Markup.removeKeyboard(),
+      );
+    }
+
+    // Захід з участю техвідділу — опис заходу
+    if (type === "event_notice") {
+      state.step = "WAIT_EVENT_DESCRIPTION";
+      userState.set(ctx.from.id, state);
+
+      return ctx.reply(
+        "Опишіть коротко захід: що це, яка потрібна техніка, обладнання, допомога тощо.",
         Markup.removeKeyboard(),
       );
     }
@@ -192,6 +205,7 @@ const handleTicketDialog = async (ctx) => {
           ["💻 Комп’ютер", "📦 Програми"],
           ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
           ["🎥 Проектор / телевізор"],
+          ["📅 Захід з участю техвідділу"],
           ["❓ Інше питання"],
         ])
           .resize()
@@ -289,6 +303,7 @@ const handleTicketDialog = async (ctx) => {
           ["💻 Комп’ютер", "📦 Програми"],
           ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
           ["🎥 Проектор / телевізор"],
+          ["📅 Захід з участю техвідділу"],
           ["❓ Інше питання"],
         ])
           .resize()
@@ -301,7 +316,8 @@ const handleTicketDialog = async (ctx) => {
       text === "📎 Інше з комп’ютером" ||
       text === "📌 Інша програма" ||
       text === "📌 Інше з принтером" ||
-      text === "📌 Інше з інтернетом";
+      text === "📌 Інше з інтернетом" ||
+      text === "📌 Інша проблема";
 
     if (isOtherSubtype) {
       state.step = "WAIT_PROBLEM_DETAILS_AFTER_SUBTYPE";
@@ -318,6 +334,22 @@ const handleTicketDialog = async (ctx) => {
 
   if (state.step === "WAIT_PROBLEM_DETAILS_AFTER_SUBTYPE") {
     state.data.problemDetails = text;
+    return askBuildingPlace(ctx, state);
+  }
+
+  if (state.step === "WAIT_EVENT_DESCRIPTION") {
+    state.data.eventDescription = text;
+    state.step = "WAIT_EVENT_DATE";
+    userState.set(ctx.from.id, state);
+
+    return ctx.reply(
+      "Введіть, будь ласка, дату проведення заходу (наприклад: 15.06.2026).",
+      Markup.removeKeyboard(),
+    );
+  }
+
+  if (state.step === "WAIT_EVENT_DATE") {
+    state.data.eventDate = text;
     return askBuildingPlace(ctx, state);
   }
 

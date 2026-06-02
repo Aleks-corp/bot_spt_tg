@@ -13,6 +13,8 @@ const ticketSchema = new mongoose.Schema(
     location: String,
     mailLogin: String,
     details: String,
+    eventDescription: String,
+    eventDate: String,
 
     sourceMessageId: Number, // якщо треба лінкуватись на ориг. повідомлення
   },

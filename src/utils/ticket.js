@@ -15,6 +15,7 @@ export async function sendTicketAndNotify(ctx, state) {
       internet_issue: "Проблеми з інтернетом",
       projector_issue: "Проблеми з проектором",
       other_issue: "Інша проблема",
+      event_notice: "Повідомлення про захід",
     }[state.data.type] || "Невідомий тип";
 
   let detailsText = "";
@@ -28,6 +29,12 @@ export async function sendTicketAndNotify(ctx, state) {
       "Тип: Скидання паролю пошти\n" +
       `Логін: ${state.data.mailInfo || "не вказано"}\n` +
       "Домен: @oano.ukr.education";
+  } else if (state.data.type === "event_notice") {
+    detailsText =
+      "Тип: Повідомлення про захід\n" +
+      `Опис заходу: ${state.data.eventDescription || "не вказано"}\n` +
+      `Дата заходу: ${state.data.eventDate || "не вказано"}\n` +
+      (location ? `Місце: ${location}\n` : "");
   } else {
     detailsText =
       `Тип: ${typeLabel}\n` +
@@ -59,6 +66,8 @@ export async function sendTicketAndNotify(ctx, state) {
     location: location || null,
     mailLogin: state.data.mailInfo || null,
     details: state.data.problemDetails || null,
+    eventDescription: state.data.eventDescription || null,
+    eventDate: state.data.eventDate || null,
   });
 
   await ctx.reply("Дякуємо! Заявка відправлена до техпідтримки. 👍");
