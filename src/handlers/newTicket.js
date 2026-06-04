@@ -348,6 +348,11 @@ const handleTicketDialog = async (ctx) => {
     );
   }
 
+  if (state.step === "WAIT_PROBLEM_DETAILS_OTHER") {
+    state.data.eventDate = text;
+    return askBuildingPlace(ctx, state);
+  }
+
   if (state.step === "WAIT_EVENT_DATE") {
     state.data.eventDate = text;
     return askBuildingPlace(ctx, state);

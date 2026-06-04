@@ -1,24 +1,24 @@
 import { Markup } from "telegraf";
 import { userState } from "./newTicket.js";
 
-export const askName = (ctx, state) => {
+export const askName = (ctx, state, stateMap = null) => {
   state.step = "WAIT_NAME";
-  userState.set(ctx.from.id, state);
+  (stateMap || userState).set(ctx.from.id, state);
   return ctx.reply(
     "Введіть, будь ласка, ваше прізвище та ім'я.",
     Markup.removeKeyboard(),
   );
 };
 
-export const askRoomPlace = (ctx, state) => {
+export const askRoomPlace = (ctx, state, stateMap = null) => {
   state.step = "WAIT_ROOM_PLACE";
-  userState.set(ctx.from.id, state);
+  (stateMap || userState).set(ctx.from.id, state);
   return ctx.reply("Введіть, будь ласка, кабінет.", Markup.removeKeyboard());
 };
 
-export const askBuildingPlace = (ctx, state) => {
+export const askBuildingPlace = (ctx, state, stateMap = null) => {
   state.step = "WAIT_BUILDING_PLACE";
-  userState.set(ctx.from.id, state);
+  (stateMap || userState).set(ctx.from.id, state);
   return ctx.reply(
     "Виберіть, будь ласка, корпус",
     Markup.keyboard([
