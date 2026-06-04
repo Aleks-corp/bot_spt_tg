@@ -16,7 +16,7 @@ const ticketSchema = new mongoose.Schema(
     eventDescription: String,
     eventDate: String,
 
-    status: { type: String, default: "open" }, // open | replied
+    status: { type: String, default: "Нова" }, // Нова | Виконано
     adminReply: String,
     repliedAt: Date,
 

@@ -47,7 +47,7 @@ export const handleAdminStats = async (ctx) => {
 export const handleAdminActiveTickets = async (ctx) => {
   if (!isAdmin(ctx.from.id)) return;
 
-  const tickets = await Ticket.find()
+  const tickets = await Ticket.find({ status: { $ne: "Виконано" } })
     .sort({ createdAt: -1 })
     .limit(15)
     .lean();
