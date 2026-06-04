@@ -1,6 +1,18 @@
 import { Markup } from "telegraf";
+import { Ticket } from "../models/ticket.model.js";
 
 const SUPPORT_CHAT_ID = Number(process.env.SUPPORT_CHAT_ID);
+
+async function saveReply(telegramId, replyText) {
+  const ticket = await Ticket.findOne({ telegramId })
+    .sort({ createdAt: -1 })
+    .exec();
+  if (!ticket) return;
+  ticket.status = "replied";
+  ticket.adminReply = replyText;
+  ticket.repliedAt = new Date();
+  await ticket.save();
+}
 
 const handleReplyCommand = async (ctx) => {
   console.log("REPLY CMD RAW:", ctx.chat.id, ctx.message.text);
@@ -29,19 +41,18 @@ const handleReplyCommand = async (ctx) => {
   }
 
   try {
-    // Відправити відповідь користувачу
     await ctx.telegram.sendMessage(
       userId,
       `Відповідь від техпідтримки:\n${answerText}`,
     );
 
-    // Відправити меню користувачу
     await ctx.telegram.sendMessage(
       userId,
       "Якщо у вас є ще питання, можете залишити нову заявку:",
-      Markup.keyboard([["📝 Нова заявка"]]).resize(),
+      Markup.keyboard([["📝 Нове звернення"]]).resize(),
     );
 
+    await saveReply(userId, answerText);
     await ctx.reply("✅ Відповідь користувачу відправлена.");
     return true;
   } catch (error) {
@@ -86,19 +97,18 @@ const handleReplyToMessage = async (ctx) => {
   }
 
   try {
-    // Відправити відповідь користувачу
     await ctx.telegram.sendMessage(
       userId,
       `Відповідь від техпідтримки:\n${answerText}`,
     );
 
-    // Відправити меню користувачу
     await ctx.telegram.sendMessage(
       userId,
       "Якщо у вас є ще питання, можете залишити нову заявку:",
       Markup.keyboard([["📝 Нове звернення"]]).resize(),
     );
 
+    await saveReply(userId, answerText);
     return true;
   } catch (error) {
     console.error("Failed to send reply:", error);

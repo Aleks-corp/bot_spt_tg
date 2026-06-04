@@ -16,6 +16,10 @@ const ticketSchema = new mongoose.Schema(
     eventDescription: String,
     eventDate: String,
 
+    status: { type: String, default: "open" }, // open | replied
+    adminReply: String,
+    repliedAt: Date,
+
     sourceMessageId: Number, // якщо треба лінкуватись на ориг. повідомлення
   },
   { timestamps: true }, // createdAt / updatedAt
