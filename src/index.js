@@ -65,11 +65,15 @@ if (!process.env.BOT_TOKEN || !process.env.SUPPORT_CHAT_ID) {
       const webhookPath = `/telegraf/${bot.secretPathComponent()}`;
       const webhookUrl = `${WEBHOOK_DOMAIN}${webhookPath}`;
 
-      await bot.telegram.setWebhook(webhookUrl);
+      await bot.telegram.setWebhook(webhookUrl, {
+        allowed_updates: ["message", "message_reaction", "callback_query"],
+      });
       console.log(`✅ Webhook set to: ${webhookUrl}`);
       console.log("🤖 Bot started in PRODUCTION mode (webhooks)");
     } else {
-      await bot.launch();
+      await bot.launch({
+        allowedUpdates: ["message", "message_reaction", "callback_query"],
+      });
       console.log("🚀 Bot started in DEVELOPMENT mode (polling)");
 
       process.once("SIGINT", async () => {

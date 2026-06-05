@@ -41,7 +41,7 @@ function parseRange(rangeStr) {
   }
 
   const start = new Date(Date.UTC(fromYear, fromMonth - 1, 1));
-  const end = new Date(Date.UTC(toYear, toMonth - 1, 1)); //← toMonth - 1
+  const end = new Date(Date.UTC(toYear, toMonth, 1));
 
   return {
     start,

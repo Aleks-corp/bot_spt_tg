@@ -5,6 +5,10 @@ import { handleNewTicket, handleTicketDialog } from "./handlers/newTicket.js";
 import { handleReplyCommand, handleReplyToMessage } from "./handlers/reply.js";
 import { handleAdminStats, handleAdminActiveTickets } from "./handlers/adminHandlers.js";
 import { handleAdminNewTicket, handleAdminTicketDialog } from "./handlers/adminTicket.js";
+import { handleAdminExport, handleExportDialog } from "./handlers/adminExport.js";
+import { Ticket } from "./models/ticket.model.js";
+
+const SUPPORT_CHAT_ID = Number(process.env.SUPPORT_CHAT_ID);
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
@@ -19,12 +23,28 @@ bot.hears("📝 Нове звернення", handleNewTicket);
 bot.hears("📋 Внутрішня заявка", handleAdminNewTicket);
 bot.hears("📊 Статистика", handleAdminStats);
 bot.hears("👥 Активні заявки", handleAdminActiveTickets);
+bot.hears("📥 Експорт CSV", handleAdminExport);
 bot.command("reply", handleReplyCommand);
+
+// Реакція в групі підтримки → статус "Виконано"
+bot.on("message_reaction", async (ctx) => {
+  const reaction = ctx.update.message_reaction;
+  if (reaction.chat.id !== SUPPORT_CHAT_ID) return;
+  if (!reaction.new_reaction?.length) return;
+
+  await Ticket.findOneAndUpdate(
+    { sourceMessageId: reaction.message_id, status: { $ne: "Виконано" } },
+    { status: "Виконано" },
+  );
+});
 
 // Текстові повідомлення
 bot.on(message("text"), async (ctx) => {
   const handledByReply = await handleReplyToMessage(ctx);
   if (handledByReply) return;
+
+  const handledByExport = await handleExportDialog(ctx);
+  if (handledByExport) return;
 
   const handledByAdmin = await handleAdminTicketDialog(ctx);
   if (handledByAdmin) return;

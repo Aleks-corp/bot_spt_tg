@@ -58,7 +58,7 @@ export async function sendTicketAndNotify(ctx, state) {
     `🕒 Час: ${new Date().toLocaleString("uk-UA")}\n\n` +
     detailsText;
 
-  await Ticket.create({
+  const ticket = await Ticket.create({
     telegramId: user.id,
     username: user.username || null,
     fullName: state.data.fullName || null,
@@ -76,5 +76,6 @@ export async function sendTicketAndNotify(ctx, state) {
 
   await ctx.reply("Дякуємо! Заявка відправлена до техпідтримки. 👍");
 
-  await ctx.telegram.sendMessage(SUPPORT_CHAT_ID, text);
+  const sent = await ctx.telegram.sendMessage(SUPPORT_CHAT_ID, text);
+  await Ticket.findByIdAndUpdate(ticket._id, { sourceMessageId: sent.message_id });
 }

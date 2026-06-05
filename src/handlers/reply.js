@@ -8,7 +8,6 @@ async function saveReply(telegramId, replyText) {
     .sort({ createdAt: -1 })
     .exec();
   if (!ticket) return;
-  ticket.status = "Виконано";
   ticket.adminReply = replyText;
   ticket.repliedAt = new Date();
   await ticket.save();
