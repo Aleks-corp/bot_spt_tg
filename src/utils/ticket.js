@@ -112,7 +112,8 @@ export async function sendTicketAndNotify(ctx, state) {
 
       const sent = await ctx.telegram.sendMessage(
         SUPPORT_CHAT_ID,
-        `${text}\n\n❌ Автоматичне скидання пароля не вдалося: ${err.message}`,
+        `${text}\n\n❌ Автоматичне скидання пароля не вдалося: ${err.message}\n\n` +
+          "Скиньте пароль вручну і дайте відповідь на це повідомлення (reply) з новим паролем — його буде надіслано користувачу.",
       );
       await Ticket.findByIdAndUpdate(ticket._id, {
         sourceMessageId: sent.message_id,

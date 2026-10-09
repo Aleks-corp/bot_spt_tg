@@ -92,9 +92,19 @@ const handleCreateAccountDialog = async (ctx) => {
     } catch (err) {
       console.error("❌ Помилка створення акаунта:", err.message);
       await ctx.reply(
-        "⚠️ Не вдалося створити акаунт автоматично. Зверніться до системного адміністратора.\n" +
+        "⚠️ Не вдалося створити акаунт автоматично. Заявку передано системному адміністратору.\n" +
           `Причина: ${err.message}`,
         Markup.removeKeyboard(),
+      );
+
+      await ctx.telegram.sendMessage(
+        SUPPORT_CHAT_ID,
+        "❌ Не вдалося автоматично створити акаунт Google Workspace:\n" +
+          `👤 ${state.data.lastName} ${state.data.firstName}\n` +
+          `🏢 Підрозділ: ${state.data.department}\n` +
+          `🆔 Telegram ID: ${ctx.from.id}\n` +
+          `⚠️ Причина: ${err.message}\n\n` +
+          "Створіть акаунт вручну і дайте відповідь на це повідомлення (reply) з паролем — його буде надіслано користувачу.",
       );
     }
 
