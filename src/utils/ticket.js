@@ -18,7 +18,8 @@ export async function sendTicketAndNotify(ctx, state) {
       event_notice: "Повідомлення про захід",
       internal_diagnostic: "Діагностика",
       internal_planned_check: "Планова перевірка",
-      internal_equipment_replace: "Заміна обладнання",
+      internal_printer_replace: "Заміна принтера",
+      internal_pc_replace: "Заміна ПК / ноутбука",
       internal_other: "Внутрішнє (інше)",
     }[state.data.type] || "Невідомий тип";
 

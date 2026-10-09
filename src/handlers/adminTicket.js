@@ -41,8 +41,8 @@ const handleAdminTicketDialog = async (ctx) => {
     let type = null;
     if (text === "🔍 Діагностика обладнання") type = "internal_diagnostic";
     else if (text === "🗓️ Планова перевірка") type = "internal_planned_check";
-    else if (text === "🖨️ Заміна принтера" || text === "💻 Заміна ПК / ноутбука")
-      type = "internal_equipment_replace";
+    else if (text === "🖨️ Заміна принтера") type = "internal_printer_replace";
+    else if (text === "💻 Заміна ПК / ноутбука") type = "internal_pc_replace";
     else if (text === "📝 Заявка від користувача") type = "internal_other";
     else if (text === "📌 Внутрішнє (інше)") type = "internal_other";
 
@@ -53,15 +53,29 @@ const handleAdminTicketDialog = async (ctx) => {
     state.data.type = type;
     state.data.subtype = text;
 
-    if (type === "internal_equipment_replace") {
+    if (type === "internal_printer_replace") {
       state.step = "WAIT_ADMIN_EQUIPMENT_TYPE";
       adminTicketState.set(ctx.from.id, state);
 
       return ctx.reply(
-        "Яке саме обладнання потрібно замінити?",
+        "Який саме принтер потрібно замінити?",
         Markup.keyboard([
           ["🖨️ Принтер Kyocera", "🖨️ Принтер Brother"],
           ["🖨️ Принтер HP LaserJet"],
+          ["📌 Інше обладнання"],
+        ])
+          .resize()
+          .oneTime(),
+      );
+    }
+
+    if (type === "internal_pc_replace") {
+      state.step = "WAIT_ADMIN_EQUIPMENT_TYPE";
+      adminTicketState.set(ctx.from.id, state);
+
+      return ctx.reply(
+        "Що саме потрібно замінити?",
+        Markup.keyboard([
           ["💻 ПК", "💻 Ноутбук"],
           ["📌 Інше обладнання"],
         ])

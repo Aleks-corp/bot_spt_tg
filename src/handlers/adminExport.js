@@ -15,7 +15,8 @@ const TYPE_LABELS = {
   other_issue: "Інша проблема",
   internal_diagnostic: "Діагностика",
   internal_planned_check: "Планова перевірка",
-  internal_equipment_replace: "Заміна обладнання",
+  internal_printer_replace: "Заміна принтера",
+  internal_pc_replace: "Заміна ПК / ноутбука",
   internal_other: "Внутрішнє (інше)",
 };
 
