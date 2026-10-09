@@ -1,4 +1,5 @@
 import { Ticket } from "../models/ticket.model.js";
+import { resetWorkspacePassword } from "../services/googleWorkspace.js";
 
 const SUPPORT_CHAT_ID = Number(process.env.SUPPORT_CHAT_ID);
 
@@ -74,6 +75,51 @@ export async function sendTicketAndNotify(ctx, state) {
     eventDescription: state.data.eventDescription || null,
     eventDate: state.data.eventDate || null,
   });
+
+  if (state.data.type === "reset_mail_password") {
+    try {
+      const { email, newPassword } = await resetWorkspacePassword(
+        state.data.mailInfo,
+      );
+
+      await ctx.reply(
+        "✅ Пароль успішно скинуто!\n\n" +
+          `📧 Логін: ${email}\n` +
+          `🔑 Новий пароль: ${newPassword}\n\n` +
+          "⚠️ Під час першого входу систему попросить встановити власний пароль.\n" +
+          "Нікому не передавайте цей пароль.",
+      );
+
+      await Ticket.findByIdAndUpdate(ticket._id, {
+        autoResolved: true,
+        status: "Виконано",
+      });
+
+      const sent = await ctx.telegram.sendMessage(
+        SUPPORT_CHAT_ID,
+        `${text}\n\n✅ Пароль скинуто автоматично.\n📧 Email: ${email}\n🔑 Новий пароль: ${newPassword}`,
+      );
+      await Ticket.findByIdAndUpdate(ticket._id, {
+        sourceMessageId: sent.message_id,
+      });
+      return;
+    } catch (err) {
+      console.error("❌ Помилка автоматичного скидання пароля:", err.message);
+
+      await ctx.reply(
+        "⚠️ Не вдалося скинути пароль автоматично. Заявку передано техпідтримці для ручної обробки.",
+      );
+
+      const sent = await ctx.telegram.sendMessage(
+        SUPPORT_CHAT_ID,
+        `${text}\n\n❌ Автоматичне скидання пароля не вдалося: ${err.message}`,
+      );
+      await Ticket.findByIdAndUpdate(ticket._id, {
+        sourceMessageId: sent.message_id,
+      });
+      return;
+    }
+  }
 
   await ctx.reply("Дякуємо! Заявка відправлена до техпідтримки. 👍");
 

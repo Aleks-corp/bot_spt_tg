@@ -19,6 +19,7 @@ const ticketSchema = new mongoose.Schema(
     status: { type: String, default: "Нова" }, // Нова | Виконано
     adminReply: String,
     repliedAt: Date,
+    autoResolved: { type: Boolean, default: false }, // скинуто автоматично через Google Workspace API
 
     sourceMessageId: Number, // якщо треба лінкуватись на ориг. повідомлення
   },
