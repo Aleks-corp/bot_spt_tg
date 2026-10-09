@@ -86,8 +86,7 @@ export async function sendTicketAndNotify(ctx, state) {
         "✅ Пароль успішно скинуто!\n\n" +
           `📧 Логін: ${email}\n` +
           `🔑 Новий пароль: ${newPassword}\n\n` +
-          "⚠️ Під час першого входу систему попросить встановити власний пароль.\n" +
-          "Нікому не передавайте цей пароль.",
+          "⚠️ Нікому не передавайте цей пароль.",
       );
 
       await Ticket.findByIdAndUpdate(ticket._id, {

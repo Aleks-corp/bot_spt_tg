@@ -55,7 +55,6 @@ export async function resetWorkspacePassword(login) {
     method: "PUT",
     data: {
       password: newPassword,
-      changePasswordAtNextLogin: true,
     },
   });
 
@@ -89,7 +88,6 @@ export async function createWorkspaceUser({ firstName, lastName, department }) {
           primaryEmail: email,
           name: { givenName: firstName, familyName: lastName },
           password: newPassword,
-          changePasswordAtNextLogin: true,
           organizations: [{ department, primary: true }],
         },
       });

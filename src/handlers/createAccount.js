@@ -77,7 +77,7 @@ const handleCreateAccountDialog = async (ctx) => {
           `🏢 Підрозділ: ${state.data.department}\n` +
           `📧 Email: ${email}\n` +
           `🔑 Пароль: ${newPassword}\n\n` +
-          "⚠️ Під час першого входу систему попросить встановити власний пароль.",
+          "⚠️ Нікому не передавайте цей пароль.",
         Markup.removeKeyboard(),
       );
 
