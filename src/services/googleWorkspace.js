@@ -1,7 +1,10 @@
 import fs from "fs";
 import { JWT } from "google-auth-library";
-import { generatePassword } from "../utils/generatePassword.js";
-import { buildEmailLogin } from "../utils/transliterate.js";
+import {
+  buildEmailLogin,
+  buildPasswordFromLogin,
+  buildPasswordFromName,
+} from "../utils/transliterate.js";
 
 const SCOPES = ["https://www.googleapis.com/auth/admin.directory.user"];
 const DOMAIN = process.env.GOOGLE_WORKSPACE_DOMAIN || "oano.ukr.education";
@@ -45,7 +48,7 @@ function toEmail(login) {
 export async function resetWorkspacePassword(login) {
   const client = getClient();
   const email = toEmail(login);
-  const newPassword = generatePassword();
+  const newPassword = buildPasswordFromLogin(login);
 
   await client.request({
     url: `https://admin.googleapis.com/admin/directory/v1/users/${encodeURIComponent(email)}`,
@@ -71,7 +74,7 @@ function isDuplicateEmailError(err) {
 export async function createWorkspaceUser({ firstName, lastName, department }) {
   const client = getClient();
   const baseLogin = buildEmailLogin(lastName, firstName);
-  const newPassword = generatePassword();
+  const newPassword = buildPasswordFromName(lastName);
 
   let login = baseLogin;
   let attempt = 0;

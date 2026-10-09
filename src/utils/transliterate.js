@@ -61,3 +61,22 @@ export function buildEmailLogin(lastName, firstName) {
   const firstInitial = transliterate(firstName.trim()).charAt(0);
   return `${lastPart}.${firstInitial}`;
 }
+
+function capitalize(str) {
+  if (!str) return str;
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+// Формує пароль за замовчуванням: транслітероване прізвище з великої
+// літери + "2026". Приклад: buildPasswordFromName("Березнюк") -> "Bereznuk2026"
+export function buildPasswordFromName(lastName) {
+  return `${capitalize(transliterate(lastName.trim()))}2026`;
+}
+
+// Те саме, але з логіна пошти (напр. "bereznuk.o" або "bereznuk.o@domain"),
+// коли прізвище окремо не відоме (скидання пароля).
+// Приклад: buildPasswordFromLogin("bereznuk.o") -> "Bereznuk2026"
+export function buildPasswordFromLogin(login) {
+  const surname = login.trim().split("@")[0].split(".")[0];
+  return `${capitalize(surname)}2026`;
+}
