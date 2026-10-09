@@ -7,6 +7,7 @@ import { handleAdminStats, handleAdminActiveTickets } from "./handlers/adminHand
 import { handleAdminNewTicket, handleAdminTicketDialog } from "./handlers/adminTicket.js";
 import { handleAdminExport, handleExportDialog } from "./handlers/adminExport.js";
 import { handleCreateAccount, handleCreateAccountDialog } from "./handlers/createAccount.js";
+import { handleAdminMessage, handleAdminMessageDialog } from "./handlers/adminMessage.js";
 import { Ticket } from "./models/ticket.model.js";
 
 const SUPPORT_CHAT_ID = Number(process.env.SUPPORT_CHAT_ID);
@@ -26,6 +27,7 @@ bot.hears("📊 Статистика", handleAdminStats);
 bot.hears("👥 Активні заявки", handleAdminActiveTickets);
 bot.hears("📥 Експорт CSV", handleAdminExport);
 bot.hears("➕ Створити акаунт", handleCreateAccount);
+bot.hears("✉️ Написати користувачу", handleAdminMessage);
 bot.command("reply", handleReplyCommand);
 
 // Реакція в групі підтримки → статус "Виконано"
@@ -53,6 +55,9 @@ bot.on(message("text"), async (ctx) => {
 
   const handledByCreateAccount = await handleCreateAccountDialog(ctx);
   if (handledByCreateAccount) return;
+
+  const handledByAdminMessage = await handleAdminMessageDialog(ctx);
+  if (handledByAdminMessage) return;
 
   await handleTicketDialog(ctx);
 });
