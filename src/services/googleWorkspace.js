@@ -31,7 +31,7 @@ function getClient() {
     email: keyFile.client_email,
     key: keyFile.private_key,
     scopes: SCOPES,
-    subject: adminEmail, // імперсонований супер-адмін домену
+    subject: toEmail(adminEmail), // імперсонований супер-адмін домену
   });
 
   return jwtClient;
