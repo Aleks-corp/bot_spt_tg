@@ -75,9 +75,10 @@ export async function createWorkspaceUser({
   lastName,
   department,
   orgUnitPath,
+  loginSuffix,
 }) {
   const client = getClient();
-  const baseLogin = buildEmailLogin(lastName, firstName);
+  const baseLogin = buildEmailLogin(lastName, firstName) + (loginSuffix || "");
   const newPassword = buildPasswordFromName(lastName);
 
   let login = baseLogin;
