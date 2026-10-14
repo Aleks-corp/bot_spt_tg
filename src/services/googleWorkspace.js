@@ -70,7 +70,12 @@ function isDuplicateEmailError(err) {
 // Створює нового користувача Google Workspace. Логін пошти формується з
 // прізвища та першої літери імені (транслітерація), напр. bereznuk.o.
 // Якщо такий логін вже зайнятий — додає цифру (bereznuk.o1, bereznuk.o2, ...).
-export async function createWorkspaceUser({ firstName, lastName, department }) {
+export async function createWorkspaceUser({
+  firstName,
+  lastName,
+  department,
+  orgUnitPath,
+}) {
   const client = getClient();
   const baseLogin = buildEmailLogin(lastName, firstName);
   const newPassword = buildPasswordFromName(lastName);
@@ -89,6 +94,7 @@ export async function createWorkspaceUser({ firstName, lastName, department }) {
           name: { givenName: firstName, familyName: lastName },
           password: newPassword,
           organizations: [{ department, primary: true }],
+          orgUnitPath,
         },
       });
       return { email, newPassword };
