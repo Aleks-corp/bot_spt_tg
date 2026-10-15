@@ -1,6 +1,7 @@
 import { Markup } from "telegraf";
 import { DEPARTMENTS } from "../config/departments.js";
 import { createWorkspaceUser } from "../services/googleWorkspace.js";
+import { isAdmin } from "../config/admins.js";
 
 const SUPPORT_CHAT_ID = Number(process.env.SUPPORT_CHAT_ID);
 
@@ -18,6 +19,8 @@ function departmentsKeyboard() {
 }
 
 const handleCreateAccount = (ctx) => {
+  if (!isAdmin(ctx.from.id)) return;
+
   createAccountState.set(ctx.from.id, { step: "WAIT_LASTNAME", data: {} });
 
   return ctx.reply(
@@ -28,6 +31,7 @@ const handleCreateAccount = (ctx) => {
 
 const handleCreateAccountDialog = async (ctx) => {
   if (ctx.chat.type !== "private") return false;
+  if (!isAdmin(ctx.from.id)) return false;
 
   const state = createAccountState.get(ctx.from.id);
   if (!state) return false;
