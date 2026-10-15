@@ -43,7 +43,7 @@ const handleAdminTicketDialog = async (ctx) => {
     else if (text === "🗓️ Планова перевірка") type = "internal_planned_check";
     else if (text === "🖨️ Заміна принтера") type = "internal_printer_replace";
     else if (text === "💻 Заміна ПК / ноутбука") type = "internal_pc_replace";
-    else if (text === "📝 Заявка від користувача") type = "internal_other";
+    else if (text === "📝 Заявка від користувача") type = "internal_user_request";
     else if (text === "📌 Внутрішнє (інше)") type = "internal_other";
 
     if (!type) {
@@ -116,6 +116,16 @@ const handleAdminTicketDialog = async (ctx) => {
 
   if (state.step === "WAIT_ROOM_PLACE") {
     state.data.room = text;
+
+    if (state.data.type === "internal_user_request") {
+      return askName(
+        ctx,
+        state,
+        adminTicketState,
+        "Введіть, будь ласка, ПІБ користувача, за яким подається заявка.",
+      );
+    }
+
     return askName(ctx, state, adminTicketState);
   }
 

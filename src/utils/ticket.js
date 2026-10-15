@@ -21,6 +21,7 @@ export async function sendTicketAndNotify(ctx, state) {
       internal_planned_check: "Планова перевірка",
       internal_printer_replace: "Заміна принтера",
       internal_pc_replace: "Заміна ПК / ноутбука",
+      internal_user_request: "Заявка від користувача",
       internal_other: "Внутрішнє (інше)",
     }[state.data.type] || "Невідомий тип";
 

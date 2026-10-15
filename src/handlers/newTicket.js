@@ -4,25 +4,26 @@ import { askName, askRoomPlace, askBuildingPlace } from "./dialogHelpers.js";
 // state: userId -> { step, data }
 const userState = new Map();
 
+function mainTypeKeyboard() {
+  return Markup.keyboard([
+    ["🔑 Скинути пароль пошти", "➕ Створити акаунт"],
+    ["💻 Комп’ютер", "📦 Програми"],
+    ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
+    ["🎥 Проектор / телевізор"],
+    ["📅 Захід з участю техвідділу"],
+    ["❓ Інше питання"],
+  ])
+    .resize()
+    .oneTime();
+}
+
 const handleNewTicket = (ctx) => {
   userState.set(ctx.from.id, {
     step: "WAIT_MAIN_TYPE",
     data: {},
   });
 
-  return ctx.reply(
-    "Оберіть, будь ласка, що у вас сталося:",
-    Markup.keyboard([
-      ["🔑 Скинути пароль пошти", "➕ Створити акаунт"],
-      ["💻 Комп’ютер", "📦 Програми"],
-      ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
-      ["🎥 Проектор / телевізор"],
-      ["📅 Захід з участю техвідділу"],
-      ["❓ Інше питання"],
-    ])
-      .resize()
-      .oneTime(),
-  );
+  return ctx.reply("Оберіть, будь ласка, що у вас сталося:", mainTypeKeyboard());
 };
 
 const handleTicketDialog = async (ctx) => {
@@ -198,19 +199,7 @@ const handleTicketDialog = async (ctx) => {
       state.data.printer = null;
       userState.set(ctx.from.id, state);
 
-      return ctx.reply(
-        "Оберіть, будь ласка, що у вас сталося:",
-        Markup.keyboard([
-          ["🔑 Скинути пароль пошти"],
-          ["💻 Комп’ютер", "📦 Програми"],
-          ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
-          ["🎥 Проектор / телевізор"],
-          ["📅 Захід з участю техвідділу"],
-          ["❓ Інше питання"],
-        ])
-          .resize()
-          .oneTime(),
-      );
+      return ctx.reply("Оберіть, будь ласка, що у вас сталося:", mainTypeKeyboard());
     }
 
     if (text === "🖨️ HP LaserJet") {
@@ -296,19 +285,7 @@ const handleTicketDialog = async (ctx) => {
       state.data.subtype = null;
       userState.set(ctx.from.id, state);
 
-      return ctx.reply(
-        "Оберіть, будь ласка, що у вас сталося:",
-        Markup.keyboard([
-          ["🔑 Скинути пароль пошти"],
-          ["💻 Комп’ютер", "📦 Програми"],
-          ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
-          ["🎥 Проектор / телевізор"],
-          ["📅 Захід з участю техвідділу"],
-          ["❓ Інше питання"],
-        ])
-          .resize()
-          .oneTime(),
-      );
+      return ctx.reply("Оберіть, будь ласка, що у вас сталося:", mainTypeKeyboard());
     }
 
     state.data.subtype = text;
@@ -382,8 +359,10 @@ const handleTicketDialog = async (ctx) => {
 
     await sendTicketAndNotify(ctx, state);
     userState.delete(ctx.from.id);
-    return;
+    return true;
   }
+
+  return false;
 };
 
 export { userState, handleNewTicket, handleTicketDialog };

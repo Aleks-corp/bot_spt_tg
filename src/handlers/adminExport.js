@@ -3,7 +3,7 @@ import { Ticket } from "../models/ticket.model.js";
 import { StrayMessage } from "../models/strayMessage.model.js";
 import { isAdmin } from "../config/admins.js";
 
-const exportState = new Map();
+export const exportState = new Map();
 
 const TYPE_LABELS = {
   reset_mail_password: "Скидання паролю пошти",
@@ -18,6 +18,7 @@ const TYPE_LABELS = {
   internal_planned_check: "Планова перевірка",
   internal_printer_replace: "Заміна принтера",
   internal_pc_replace: "Заміна ПК / ноутбука",
+  internal_user_request: "Заявка від користувача",
   internal_other: "Внутрішнє (інше)",
 };
 

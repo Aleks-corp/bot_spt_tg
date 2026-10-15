@@ -14,6 +14,7 @@ const TYPE_LABELS = {
   internal_planned_check: "Планова перевірка",
   internal_printer_replace: "Заміна принтера",
   internal_pc_replace: "Заміна ПК / ноутбука",
+  internal_user_request: "Заявка від користувача",
   internal_other: "Внутрішнє (інше)",
 };
 

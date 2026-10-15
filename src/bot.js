@@ -1,13 +1,25 @@
 import { Telegraf } from "telegraf";
 import { message } from "telegraf/filters";
 import startBot from "./handlers/start.js";
-import { handleNewTicket, handleTicketDialog } from "./handlers/newTicket.js";
+import { handleNewTicket, handleTicketDialog, userState } from "./handlers/newTicket.js";
 import { handleReplyCommand, handleReplyToMessage } from "./handlers/reply.js";
 import { handleAdminStats, handleAdminActiveTickets } from "./handlers/adminHandlers.js";
-import { handleAdminNewTicket, handleAdminTicketDialog } from "./handlers/adminTicket.js";
-import { handleAdminExport, handleExportDialog } from "./handlers/adminExport.js";
-import { handleCreateAccount, handleCreateAccountDialog } from "./handlers/createAccount.js";
-import { handleAdminMessage, handleAdminMessageDialog } from "./handlers/adminMessage.js";
+import {
+  handleAdminNewTicket,
+  handleAdminTicketDialog,
+  adminTicketState,
+} from "./handlers/adminTicket.js";
+import { handleAdminExport, handleExportDialog, exportState } from "./handlers/adminExport.js";
+import {
+  handleCreateAccount,
+  handleCreateAccountDialog,
+  createAccountState,
+} from "./handlers/createAccount.js";
+import {
+  handleAdminMessage,
+  handleAdminMessageDialog,
+  adminMessageState,
+} from "./handlers/adminMessage.js";
 import { handleStrayMessage } from "./handlers/strayMessage.js";
 import { Ticket } from "./models/ticket.model.js";
 
@@ -20,15 +32,42 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 //   return next();
 // });
 
+// Повністю скидає пам'ять усіх діалогів для юзера — викликається при
+// вході в будь-який новий флоу, щоб завислий стан одного діалогу не
+// перехоплював повідомлення іншого (напр. недороблене створення
+// акаунта блокувало звичайну заявку).
+function clearAllStates(userId) {
+  userState.delete(userId);
+  createAccountState.delete(userId);
+  adminTicketState.delete(userId);
+  exportState.delete(userId);
+  adminMessageState.delete(userId);
+}
+
 // Команди
 bot.start(startBot);
-bot.hears("📝 Нове звернення", handleNewTicket);
-bot.hears("📋 Внутрішня заявка", handleAdminNewTicket);
+bot.hears("📝 Нове звернення", (ctx) => {
+  clearAllStates(ctx.from.id);
+  return handleNewTicket(ctx);
+});
+bot.hears("📋 Внутрішня заявка", (ctx) => {
+  clearAllStates(ctx.from.id);
+  return handleAdminNewTicket(ctx);
+});
 bot.hears("📊 Статистика", handleAdminStats);
 bot.hears("👥 Активні заявки", handleAdminActiveTickets);
-bot.hears("📥 Експорт CSV", handleAdminExport);
-bot.hears("➕ Створити акаунт", handleCreateAccount);
-bot.hears("✉️ Написати користувачу", handleAdminMessage);
+bot.hears("📥 Експорт CSV", (ctx) => {
+  clearAllStates(ctx.from.id);
+  return handleAdminExport(ctx);
+});
+bot.hears("➕ Створити акаунт", (ctx) => {
+  clearAllStates(ctx.from.id);
+  return handleCreateAccount(ctx);
+});
+bot.hears("✉️ Написати користувачу", (ctx) => {
+  clearAllStates(ctx.from.id);
+  return handleAdminMessage(ctx);
+});
 bot.command("reply", handleReplyCommand);
 
 // Реакція в групі підтримки → статус "Виконано"

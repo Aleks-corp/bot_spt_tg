@@ -3,7 +3,6 @@ import "dotenv/config";
 import axios from "axios";
 import { bot } from "./bot.js";
 import { connectDB, closeDB } from "./db.js";
-import { handleExport } from "./utils/export.js";
 
 const PORT = process.env.PORT || 3000;
 const WEBHOOK_DOMAIN = process.env.WEBHOOK_DOMAIN;
@@ -14,10 +13,6 @@ const server = http.createServer(async (req, res) => {
   if (req.url === "/health") {
     res.writeHead(200, { "Content-Type": "text/plain" });
     return res.end("OK");
-  }
-
-  if (req.url.startsWith("/export")) {
-    return handleExport(req, res);
   }
 
   if (IS_PRODUCTION && WEBHOOK_DOMAIN && req.url.startsWith("/telegraf/")) {
@@ -75,16 +70,16 @@ if (!process.env.BOT_TOKEN || !process.env.SUPPORT_CHAT_ID) {
         allowedUpdates: ["message", "message_reaction", "callback_query"],
       });
       console.log("🚀 Bot started in DEVELOPMENT mode (polling)");
-
-      process.once("SIGINT", async () => {
-        await closeDB();
-        bot.stop("SIGINT");
-      });
-      process.once("SIGTERM", async () => {
-        await closeDB();
-        bot.stop("SIGTERM");
-      });
     }
+
+    process.once("SIGINT", async () => {
+      await closeDB();
+      bot.stop("SIGINT");
+    });
+    process.once("SIGTERM", async () => {
+      await closeDB();
+      bot.stop("SIGTERM");
+    });
   } catch (err) {
     console.error("❌ Failed to start app:", err);
     process.exit(1);

@@ -3,14 +3,19 @@ import { Ticket } from "../models/ticket.model.js";
 
 const SUPPORT_CHAT_ID = Number(process.env.SUPPORT_CHAT_ID);
 
-async function saveReply(telegramId, replyText) {
-  const ticket = await Ticket.findOne({ telegramId })
-    .sort({ createdAt: -1 })
-    .exec();
-  if (!ticket) return;
-  ticket.adminReply = replyText;
-  ticket.repliedAt = new Date();
-  await ticket.save();
+async function saveReply(telegramId, replyText, sourceMessageId = null) {
+  const ticket = sourceMessageId
+    ? await Ticket.findOne({ sourceMessageId }).exec()
+    : null;
+
+  const target =
+    ticket ||
+    (await Ticket.findOne({ telegramId }).sort({ createdAt: -1 }).exec());
+
+  if (!target) return;
+  target.adminReply = replyText;
+  target.repliedAt = new Date();
+  await target.save();
 }
 
 const handleReplyCommand = async (ctx) => {
@@ -107,7 +112,7 @@ const handleReplyToMessage = async (ctx) => {
       Markup.keyboard([["📝 Нове звернення"]]).resize(),
     );
 
-    await saveReply(userId, answerText);
+    await saveReply(userId, answerText, ctx.message.reply_to_message.message_id);
     return true;
   } catch (error) {
     console.error("Failed to send reply:", error);

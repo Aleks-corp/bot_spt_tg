@@ -1,13 +1,15 @@
 import { Markup } from "telegraf";
 import { userState } from "./newTicket.js";
 
-export const askName = (ctx, state, stateMap = null) => {
+export const askName = (
+  ctx,
+  state,
+  stateMap = null,
+  prompt = "Введіть, будь ласка, ваше прізвище та ім'я.",
+) => {
   state.step = "WAIT_NAME";
   (stateMap || userState).set(ctx.from.id, state);
-  return ctx.reply(
-    "Введіть, будь ласка, ваше прізвище та ім'я.",
-    Markup.removeKeyboard(),
-  );
+  return ctx.reply(prompt, Markup.removeKeyboard());
 };
 
 export const askRoomPlace = (ctx, state, stateMap = null) => {
@@ -27,7 +29,6 @@ export const askBuildingPlace = (ctx, state, stateMap = null) => {
       ["Пл. Милайлівська, 3 корпус"],
       ["Вул. Лесича 8"],
       ["Вул. Ясиновського 3-А"],
-      ["⬅️ Назад"],
     ])
       .resize()
       .oneTime(),
