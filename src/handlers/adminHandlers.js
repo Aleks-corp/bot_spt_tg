@@ -73,3 +73,31 @@ export const handleAdminActiveTickets = async (ctx) => {
 
   return ctx.reply("👥 Останні 15 заявок:\n\n" + lines.join("\n\n"));
 };
+
+export const handleCloseAllTickets = async (ctx) => {
+  if (!isAdmin(ctx.from.id)) return;
+
+  const activeFilter = { status: { $ne: "Виконано" } };
+  const count = await Ticket.countDocuments(activeFilter);
+
+  if (count === 0) {
+    return ctx.reply("✅ Активних заявок немає.");
+  }
+
+  const noReplyFilter = {
+    ...activeFilter,
+    $or: [{ adminReply: null }, { adminReply: "" }, { adminReply: { $exists: false } }],
+  };
+
+  await Ticket.updateMany(noReplyFilter, {
+    $set: {
+      status: "Виконано",
+      adminReply: "Закрито без відповіді (масове завершення)",
+      repliedAt: new Date(),
+    },
+  });
+
+  await Ticket.updateMany(activeFilter, { $set: { status: "Виконано" } });
+
+  return ctx.reply(`✅ Закрито заявок: ${count}.`);
+};

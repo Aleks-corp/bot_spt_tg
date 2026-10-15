@@ -3,7 +3,11 @@ import { message } from "telegraf/filters";
 import startBot from "./handlers/start.js";
 import { handleNewTicket, handleTicketDialog, userState } from "./handlers/newTicket.js";
 import { handleReplyCommand, handleReplyToMessage } from "./handlers/reply.js";
-import { handleAdminStats, handleAdminActiveTickets } from "./handlers/adminHandlers.js";
+import {
+  handleAdminStats,
+  handleAdminActiveTickets,
+  handleCloseAllTickets,
+} from "./handlers/adminHandlers.js";
 import {
   handleAdminNewTicket,
   handleAdminTicketDialog,
@@ -56,6 +60,7 @@ bot.hears("📋 Внутрішня заявка", (ctx) => {
 });
 bot.hears("📊 Статистика", handleAdminStats);
 bot.hears("👥 Активні заявки", handleAdminActiveTickets);
+bot.hears("✅ Закрити всі заявки", handleCloseAllTickets);
 bot.hears("📥 Експорт CSV", (ctx) => {
   clearAllStates(ctx.from.id);
   return handleAdminExport(ctx);
