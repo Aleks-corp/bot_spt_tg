@@ -1,5 +1,6 @@
 import { Markup } from "telegraf";
 import { Ticket } from "../models/ticket.model.js";
+import { StrayMessage } from "../models/strayMessage.model.js";
 import { isAdmin } from "../config/admins.js";
 
 const exportState = new Map();
@@ -36,11 +37,43 @@ const escape = (value) => {
 };
 
 async function generateCsv(start, end) {
-  const tickets = await Ticket.find({ createdAt: { $gte: start, $lt: end } })
-    .sort({ createdAt: 1 })
-    .lean();
+  const [tickets, strayMessages] = await Promise.all([
+    Ticket.find({ createdAt: { $gte: start, $lt: end } }).lean(),
+    StrayMessage.find({ createdAt: { $gte: start, $lt: end } }).lean(),
+  ]);
 
-  if (!tickets.length) return null;
+  const rows = [
+    ...tickets.map((t) => ({
+      createdAt: t.createdAt,
+      type: TYPE_LABELS[t.type] || t.type || "",
+      subtype: t.subtype || "",
+      printer: t.printer || "",
+      fullName: t.fullName || "",
+      telegramId: t.telegramId || "",
+      username: t.username ? `@${t.username}` : "",
+      location: t.location || "",
+      mailLogin: t.mailLogin || "",
+      details: t.details || "",
+      status: t.status || "",
+      adminReply: t.adminReply || "",
+    })),
+    ...strayMessages.map((m) => ({
+      createdAt: m.createdAt,
+      type: "Повідомлення без заявки",
+      subtype: "",
+      printer: "",
+      fullName: m.fullName || "",
+      telegramId: m.telegramId || "",
+      username: m.username ? `@${m.username}` : "",
+      location: "",
+      mailLogin: "",
+      details: m.text || "",
+      status: "",
+      adminReply: "",
+    })),
+  ].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+  if (!rows.length) return null;
 
   const headers = [
     "Дата",
@@ -59,28 +92,28 @@ async function generateCsv(start, end) {
 
   const lines = [headers.join(";")];
 
-  for (const t of tickets) {
+  for (const r of rows) {
     lines.push(
       [
-        t.createdAt ? new Date(t.createdAt).toLocaleString("uk-UA") : "",
-        TYPE_LABELS[t.type] || t.type || "",
-        t.subtype || "",
-        t.printer || "",
-        t.fullName || "",
-        t.telegramId || "",
-        t.username ? `@${t.username}` : "",
-        t.location || "",
-        t.mailLogin || "",
-        t.details || "",
-        t.status || "",
-        t.adminReply || "",
+        r.createdAt ? new Date(r.createdAt).toLocaleString("uk-UA") : "",
+        r.type,
+        r.subtype,
+        r.printer,
+        r.fullName,
+        r.telegramId,
+        r.username,
+        r.location,
+        r.mailLogin,
+        r.details,
+        r.status,
+        r.adminReply,
       ]
         .map(escape)
         .join(";"),
     );
   }
 
-  return { csv: lines.join("\n"), count: tickets.length };
+  return { csv: lines.join("\n"), count: rows.length };
 }
 
 export const handleAdminExport = (ctx) => {

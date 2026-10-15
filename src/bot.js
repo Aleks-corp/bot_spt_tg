@@ -8,6 +8,7 @@ import { handleAdminNewTicket, handleAdminTicketDialog } from "./handlers/adminT
 import { handleAdminExport, handleExportDialog } from "./handlers/adminExport.js";
 import { handleCreateAccount, handleCreateAccountDialog } from "./handlers/createAccount.js";
 import { handleAdminMessage, handleAdminMessageDialog } from "./handlers/adminMessage.js";
+import { handleStrayMessage } from "./handlers/strayMessage.js";
 import { Ticket } from "./models/ticket.model.js";
 
 const SUPPORT_CHAT_ID = Number(process.env.SUPPORT_CHAT_ID);
@@ -59,7 +60,10 @@ bot.on(message("text"), async (ctx) => {
   const handledByAdminMessage = await handleAdminMessageDialog(ctx);
   if (handledByAdminMessage) return;
 
-  await handleTicketDialog(ctx);
+  const handledByTicket = await handleTicketDialog(ctx);
+  if (handledByTicket) return;
+
+  await handleStrayMessage(ctx);
 });
 
 export { bot };
