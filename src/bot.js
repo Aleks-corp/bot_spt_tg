@@ -65,7 +65,7 @@ bot.hears("📥 Експорт CSV", (ctx) => {
   clearAllStates(ctx.from.id);
   return handleAdminExport(ctx);
 });
-bot.hears("➕ Створити акаунт", (ctx) => {
+bot.hears("✉️ Створити корпоративну пошту", (ctx) => {
   clearAllStates(ctx.from.id);
   return handleCreateAccount(ctx);
 });

@@ -20,7 +20,17 @@ const TYPE_LABELS = {
   internal_pc_replace: "Заміна ПК / ноутбука",
   internal_user_request: "Заявка від користувача",
   internal_other: "Внутрішнє (інше)",
+  classroom_request: "Створення класруму",
 };
+
+function classroomDetails(t) {
+  return (
+    `Кафедра: ${t.classroomDepartment || "не вказано"}; ` +
+    `Курс: ${t.courseName || "не вказано"}; ` +
+    `Куратор: ${t.curator || "не вказано"}; ` +
+    `Дата: ${t.dateFrom || "?"} — ${t.dateTo || "?"}`
+  );
+}
 
 function parseMonthYear(str) {
   const match = str.trim().match(/^(\d{2})\.(\d{4})$/);
@@ -54,7 +64,7 @@ async function generateCsv(start, end) {
       username: t.username ? `@${t.username}` : "",
       location: t.location || "",
       mailLogin: t.mailLogin || "",
-      details: t.details || "",
+      details: t.type === "classroom_request" ? classroomDetails(t) : t.details || "",
       status: t.status || "",
       adminReply: t.adminReply || "",
     })),

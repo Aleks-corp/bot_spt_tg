@@ -16,6 +16,7 @@ const TYPE_LABELS = {
   internal_pc_replace: "Заміна ПК / ноутбука",
   internal_user_request: "Заявка від користувача",
   internal_other: "Внутрішнє (інше)",
+  classroom_request: "Створення класруму",
 };
 
 export const handleAdminStats = async (ctx) => {

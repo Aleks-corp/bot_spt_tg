@@ -6,7 +6,8 @@ const userState = new Map();
 
 function mainTypeKeyboard() {
   return Markup.keyboard([
-    ["🔑 Скинути пароль пошти", "➕ Створити акаунт"],
+    ["✉️ Створити корпоративну пошту", "🔑 Скинути пароль пошти"],
+    ["🏫 Створення Classroom"],
     ["💻 Комп’ютер", "📦 Програми"],
     ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
     ["🎥 Проектор / телевізор"],
@@ -17,13 +18,34 @@ function mainTypeKeyboard() {
     .oneTime();
 }
 
+const CLASSROOM_DEPARTMENTS = [
+  "КМВЗО",
+  "КДПО",
+  "КПСРІО",
+  "КПОМ",
+  "КФО",
+  "Без кафедри",
+];
+
+function classroomDepartmentKeyboard() {
+  const rows = [];
+  for (let i = 0; i < CLASSROOM_DEPARTMENTS.length; i += 2) {
+    rows.push(CLASSROOM_DEPARTMENTS.slice(i, i + 2));
+  }
+  rows.push(["⬅️ Назад"]);
+  return Markup.keyboard(rows).resize().oneTime();
+}
+
 const handleNewTicket = (ctx) => {
   userState.set(ctx.from.id, {
     step: "WAIT_MAIN_TYPE",
     data: {},
   });
 
-  return ctx.reply("Оберіть, будь ласка, що у вас сталося:", mainTypeKeyboard());
+  return ctx.reply(
+    "Оберіть, будь ласка, що у вас сталося:",
+    mainTypeKeyboard(),
+  );
 };
 
 const handleTicketDialog = async (ctx) => {
@@ -48,6 +70,7 @@ const handleTicketDialog = async (ctx) => {
     else if (text === "🌐 Інтернет / Wi‑Fi") type = "internet_issue";
     else if (text === "🎥 Проектор / телевізор") type = "projector_issue";
     else if (text === "📅 Захід з участю техвідділу") type = "event_notice";
+    else if (text === "🏫 Створення Classroom") type = "classroom_request";
     else if (text === "❓ Інше питання") type = "other_issue";
 
     if (!type) {
@@ -55,6 +78,17 @@ const handleTicketDialog = async (ctx) => {
     }
 
     state.data.type = type;
+
+    // Класрум — спочатку кафедра
+    if (type === "classroom_request") {
+      state.step = "WAIT_CLASSROOM_DEPARTMENT";
+      userState.set(ctx.from.id, state);
+
+      return ctx.reply(
+        "Оберіть, будь ласка, кафедру:",
+        classroomDepartmentKeyboard(),
+      );
+    }
 
     // Пароль — одразу логін пошти
     if (type === "reset_mail_password") {
@@ -199,7 +233,10 @@ const handleTicketDialog = async (ctx) => {
       state.data.printer = null;
       userState.set(ctx.from.id, state);
 
-      return ctx.reply("Оберіть, будь ласка, що у вас сталося:", mainTypeKeyboard());
+      return ctx.reply(
+        "Оберіть, будь ласка, що у вас сталося:",
+        mainTypeKeyboard(),
+      );
     }
 
     if (text === "🖨️ HP LaserJet") {
@@ -285,7 +322,10 @@ const handleTicketDialog = async (ctx) => {
       state.data.subtype = null;
       userState.set(ctx.from.id, state);
 
-      return ctx.reply("Оберіть, будь ласка, що у вас сталося:", mainTypeKeyboard());
+      return ctx.reply(
+        "Оберіть, будь ласка, що у вас сталося:",
+        mainTypeKeyboard(),
+      );
     }
 
     state.data.subtype = text;
@@ -333,6 +373,76 @@ const handleTicketDialog = async (ctx) => {
   if (state.step === "WAIT_EVENT_DATE") {
     state.data.eventDate = text;
     return askBuildingPlace(ctx, state);
+  }
+
+  //
+  // КЛАСРУМ
+  //
+  if (state.step === "WAIT_CLASSROOM_DEPARTMENT") {
+    if (text === "⬅️ Назад") {
+      state.step = "WAIT_MAIN_TYPE";
+      state.data.type = null;
+      userState.set(ctx.from.id, state);
+
+      return ctx.reply(
+        "Оберіть, будь ласка, що у вас сталося:",
+        mainTypeKeyboard(),
+      );
+    }
+
+    if (!CLASSROOM_DEPARTMENTS.includes(text)) {
+      return ctx.reply(
+        "Будь ласка, оберіть кафедру зі списку на клавіатурі.",
+        classroomDepartmentKeyboard(),
+      );
+    }
+
+    state.data.classroomDepartment = text;
+    state.step = "WAIT_CLASSROOM_COURSE";
+    userState.set(ctx.from.id, state);
+
+    return ctx.reply(
+      "Введіть, будь ласка, назву курсу.",
+      Markup.removeKeyboard(),
+    );
+  }
+
+  if (state.step === "WAIT_CLASSROOM_COURSE") {
+    state.data.courseName = text;
+    state.step = "WAIT_CLASSROOM_CURATOR";
+    userState.set(ctx.from.id, state);
+
+    return ctx.reply("Введіть, будь ласка, прізвище та ім'я куратора курсу.");
+  }
+
+  if (state.step === "WAIT_CLASSROOM_CURATOR") {
+    state.data.curator = text;
+    state.step = "WAIT_CLASSROOM_DATE_FROM";
+    userState.set(ctx.from.id, state);
+
+    return ctx.reply(
+      "Введіть, будь ласка, дату проведення з (наприклад: 15.06.2026).",
+    );
+  }
+
+  if (state.step === "WAIT_CLASSROOM_DATE_FROM") {
+    state.data.dateFrom = text;
+    state.step = "WAIT_CLASSROOM_DATE_TO";
+    userState.set(ctx.from.id, state);
+
+    return ctx.reply(
+      "Введіть, будь ласка, дату проведення по (наприклад: 20.06.2026).",
+    );
+  }
+
+  if (state.step === "WAIT_CLASSROOM_DATE_TO") {
+    state.data.dateTo = text;
+    state.step = "FINALIZE";
+    userState.set(ctx.from.id, state);
+
+    await sendTicketAndNotify(ctx, state);
+    userState.delete(ctx.from.id);
+    return true;
   }
 
   //

@@ -16,6 +16,12 @@ const ticketSchema = new mongoose.Schema(
     eventDescription: String,
     eventDate: String,
 
+    classroomDepartment: String, // кафедра для класруму (або "Без кафедри")
+    courseName: String,
+    curator: String,
+    dateFrom: String,
+    dateTo: String,
+
     status: { type: String, default: "Нова" }, // Нова | Виконано
     adminReply: String,
     repliedAt: Date,

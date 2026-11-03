@@ -23,6 +23,7 @@ export async function sendTicketAndNotify(ctx, state) {
       internal_pc_replace: "Заміна ПК / ноутбука",
       internal_user_request: "Заявка від користувача",
       internal_other: "Внутрішнє (інше)",
+      classroom_request: "Створення класруму",
     }[state.data.type] || "Невідомий тип";
 
   let detailsText = "";
@@ -42,6 +43,13 @@ export async function sendTicketAndNotify(ctx, state) {
       `Опис заходу: ${state.data.eventDescription || "не вказано"}\n` +
       `Дата заходу: ${state.data.eventDate || "не вказано"}\n` +
       (location ? `Місце: ${location}\n` : "");
+  } else if (state.data.type === "classroom_request") {
+    detailsText =
+      "Тип: Створення класруму\n" +
+      `Кафедра: ${state.data.classroomDepartment || "не вказано"}\n` +
+      `Назва курсу: ${state.data.courseName || "не вказано"}\n` +
+      `Куратор курсу: ${state.data.curator || "не вказано"}\n` +
+      `Дата проведення: ${state.data.dateFrom || "не вказано"} — ${state.data.dateTo || "не вказано"}`;
   } else {
     detailsText =
       `Тип: ${typeLabel}\n` +
@@ -53,9 +61,11 @@ export async function sendTicketAndNotify(ctx, state) {
       `Деталі: ${state.data.problemDetails || "не вказано"}`;
   }
 
+  const displayName = state.data.fullName || state.data.curator || "не вказано";
+
   const text =
     "Нова заявка:\n" +
-    `👤 Від: ${state.data.fullName || "не вказано"} (@${user.username || "no_username"})\n` +
+    `👤 Від: ${displayName} (@${user.username || "no_username"})\n` +
     `🆔 Telegram ID: ${user.id}\n` +
     `💬 З чату: ${chatTitle}\n` +
     `🕒 Час: ${new Date().toLocaleString("uk-UA")}\n\n` +
@@ -64,7 +74,7 @@ export async function sendTicketAndNotify(ctx, state) {
   const ticket = await Ticket.create({
     telegramId: user.id,
     username: user.username || null,
-    fullName: state.data.fullName || null,
+    fullName: state.data.fullName || state.data.curator || null,
     chatTitle,
 
     type: state.data.type,
@@ -75,6 +85,12 @@ export async function sendTicketAndNotify(ctx, state) {
     details: state.data.problemDetails || null,
     eventDescription: state.data.eventDescription || null,
     eventDate: state.data.eventDate || null,
+
+    classroomDepartment: state.data.classroomDepartment || null,
+    courseName: state.data.courseName || null,
+    curator: state.data.curator || null,
+    dateFrom: state.data.dateFrom || null,
+    dateTo: state.data.dateTo || null,
   });
 
   if (state.data.type === "reset_mail_password") {
