@@ -16,6 +16,7 @@ export async function sendTicketAndNotify(ctx, state) {
       internet_issue: "Проблеми з інтернетом",
       projector_issue: "Проблеми з проектором",
       other_issue: "Інша проблема",
+      virus_issue: "Підозра на вірус",
       event_notice: "Повідомлення про захід",
       internal_diagnostic: "Діагностика",
       internal_planned_check: "Планова перевірка",

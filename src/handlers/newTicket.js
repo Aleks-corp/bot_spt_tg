@@ -8,6 +8,7 @@ function mainTypeKeyboard() {
   return Markup.keyboard([
     ["✉️ Створити корпоративну пошту", "🔑 Скинути пароль пошти"],
     ["🏫 Створення Classroom"],
+    ["🦠 Підозра на вірус"],
     ["💻 Комп’ютер", "📦 Програми"],
     ["🖨️ Принтер", "🌐 Інтернет / Wi‑Fi"],
     ["🎥 Проектор / телевізор"],
@@ -71,6 +72,7 @@ const handleTicketDialog = async (ctx) => {
     else if (text === "🎥 Проектор / телевізор") type = "projector_issue";
     else if (text === "📅 Захід з участю техвідділу") type = "event_notice";
     else if (text === "🏫 Створення Classroom") type = "classroom_request";
+    else if (text === "🦠 Підозра на вірус") type = "virus_issue";
     else if (text === "❓ Інше питання") type = "other_issue";
 
     if (!type) {
@@ -97,6 +99,17 @@ const handleTicketDialog = async (ctx) => {
 
       return ctx.reply(
         "Введіть, будь ласка, логін пошти — без @oano.ukr.education.",
+        Markup.removeKeyboard(),
+      );
+    }
+
+    // Вірус — одразу опис
+    if (type === "virus_issue") {
+      state.step = "WAIT_PROBLEM_DETAILS_OTHER";
+      userState.set(ctx.from.id, state);
+
+      return ctx.reply(
+        "Опишіть, будь ласка, що сталося: що написав антивірус, що саме відкривали чи підключали (лист, посилання, флешка) та які є симптоми.",
         Markup.removeKeyboard(),
       );
     }

@@ -10,6 +10,7 @@ const TYPE_LABELS = {
   projector_issue: "Проблеми з проектором",
   event_notice: "Повідомлення про захід",
   other_issue: "Інша проблема",
+  virus_issue: "Підозра на вірус",
   internal_diagnostic: "Діагностика",
   internal_planned_check: "Планова перевірка",
   internal_printer_replace: "Заміна принтера",
